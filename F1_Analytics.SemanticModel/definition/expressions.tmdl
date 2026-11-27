@@ -1,0 +1,16 @@
+expression BaseUrl = "https://api.jolpi.ca/ergast/f1/" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 622ff64a-4eb1-4ef7-a97d-369aeba544f2
+	queryGroup: Parameters
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+
+expression CurrentSeason = 2026 meta [IsParameterQuery=true, Type="Number", IsParameterQueryRequired=true]
+	lineageTag: 0620b8d7-e71f-41fa-908c-f008f0078716
+	queryGroup: Parameters
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Number
+

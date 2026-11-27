@@ -1,0 +1,5 @@
+relationship 1b03e61d-96ed-4447-b2ff-194b1fc6cb7d
+	joinOnDateBehavior: datePartOnly
+	fromColumn: api_Races.date
+	toColumn: LocalDateTable_fa8e7ede-a2be-4213-b615-cf4fd1054325.Date
+
