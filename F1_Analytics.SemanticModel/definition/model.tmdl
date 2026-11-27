@@ -19,11 +19,12 @@ annotation __PBI_TimeIntelligenceEnabled = 1
 
 annotation PBI_ProTooling = ["DevMode"]
 
-annotation PBI_QueryOrder = ["BaseUrl","CurrentSeason","api_Races"]
+annotation PBI_QueryOrder = ["BaseUrl","CurrentSeason","api_Races","api_Results"]
 
 ref table api_Races
 ref table DateTableTemplate_02f9062a-61b0-4ca9-926e-9f40b6e907f2
 ref table LocalDateTable_fa8e7ede-a2be-4213-b615-cf4fd1054325
+ref table api_Results
 
 ref cultureInfo en-US
 

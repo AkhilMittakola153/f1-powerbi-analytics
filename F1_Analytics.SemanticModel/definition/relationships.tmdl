@@ -3,3 +3,7 @@ relationship 1b03e61d-96ed-4447-b2ff-194b1fc6cb7d
 	fromColumn: api_Races.date
 	toColumn: LocalDateTable_fa8e7ede-a2be-4213-b615-cf4fd1054325.Date
 
+relationship AutoDetected_62a8262c-3e51-4ebe-bd20-6e916585d9bc
+	fromColumn: api_Results.round
+	toColumn: api_Races.round
+

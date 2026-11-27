@@ -20,6 +20,19 @@
             "width": 234
           },
           "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 284,
+            "y": 0
+          },
+          "nodeIndex": "api_Results",
+          "nodeLineageTag": "9991ba7c-bfe3-491a-afa4-3bd3f902e152",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
         }
       ],
       "name": "All tables",
