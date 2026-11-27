@@ -1,0 +1,150 @@
+table fact_Results
+	lineageTag: 69bdf3ad-9d0d-484b-b8a9-bc2bcaa5cac4
+
+	column RaceKey
+		dataType: int64
+		formatString: 0
+		lineageTag: 3cd9565e-b453-4a79-a240-a335b7b43d23
+		summarizeBy: count
+		sourceColumn: RaceKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column season
+		dataType: int64
+		formatString: 0
+		lineageTag: 0bb95cd3-35b2-4eba-a274-f103507e5b8b
+		summarizeBy: sum
+		sourceColumn: season
+
+		annotation SummarizationSetBy = Automatic
+
+	column round
+		dataType: int64
+		formatString: 0
+		lineageTag: e46e7757-6fc9-456d-94ac-4eda12c61fdb
+		summarizeBy: none
+		sourceColumn: round
+
+		annotation SummarizationSetBy = Automatic
+
+	column driverId
+		dataType: string
+		lineageTag: a080c499-fb6f-493d-b955-ee21cc5839c3
+		summarizeBy: none
+		sourceColumn: driverId
+
+		annotation SummarizationSetBy = Automatic
+
+	column constructorId
+		dataType: string
+		lineageTag: dde58a7d-b435-4e51-846a-372d65424e93
+		summarizeBy: none
+		sourceColumn: constructorId
+
+		annotation SummarizationSetBy = Automatic
+
+	column number
+		dataType: int64
+		formatString: 0
+		lineageTag: 16e37054-6c30-4892-b502-f274edaa5b09
+		summarizeBy: sum
+		sourceColumn: number
+
+		annotation SummarizationSetBy = Automatic
+
+	column grid
+		dataType: int64
+		formatString: 0
+		lineageTag: 98740658-e6ed-4037-9ada-241d579a16e6
+		summarizeBy: sum
+		sourceColumn: grid
+
+		annotation SummarizationSetBy = Automatic
+
+	column position
+		dataType: int64
+		formatString: 0
+		lineageTag: ee93f54b-3ab9-49a7-86aa-8a46b62fabd7
+		summarizeBy: sum
+		sourceColumn: position
+
+		annotation SummarizationSetBy = Automatic
+
+	column positionText
+		dataType: string
+		lineageTag: ecc5fc65-c63c-42b5-b739-4b4107986a9a
+		summarizeBy: none
+		sourceColumn: positionText
+
+		annotation SummarizationSetBy = Automatic
+
+	column points
+		dataType: double
+		lineageTag: 988391bd-e2d6-420a-8e35-f0abb63e1fc9
+		summarizeBy: sum
+		sourceColumn: points
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column laps
+		dataType: int64
+		formatString: 0
+		lineageTag: d7d10fc3-5dd2-4c43-a29a-b17f93b7e4fa
+		summarizeBy: sum
+		sourceColumn: laps
+
+		annotation SummarizationSetBy = Automatic
+
+	column fastestLapRank
+		dataType: int64
+		formatString: 0
+		lineageTag: 68f47e68-a826-4754-8205-5b0ddcbe4022
+		summarizeBy: sum
+		sourceColumn: fastestLapRank
+
+		annotation SummarizationSetBy = Automatic
+
+	column status
+		dataType: string
+		lineageTag: 6dc99789-187c-4940-aaf6-287936bc2ee7
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	column detail
+		dataType: string
+		lineageTag: dedb2d93-032b-4bbf-899b-e0becb2ee228
+		summarizeBy: none
+		sourceColumn: detail
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_classified
+		dataType: string
+		lineageTag: a6ca7552-ed9b-49f2-9139-e0a08a59db74
+		summarizeBy: none
+		sourceColumn: is_classified
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_Results = m
+		mode: import
+		queryGroup: Staging
+		source =
+				let
+				    Combined = Table.Combine({hist_Results, api_Results}),
+				    Keep = Table.SelectColumns(Combined,
+				        {"RaceKey", "season", "round", "driverId", "constructorId",
+				         "number", "grid", "position", "positionText", "points",
+				         "laps", "fastestLapRank", "status", "detail", "is_classified"})
+				in
+				    Keep
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
