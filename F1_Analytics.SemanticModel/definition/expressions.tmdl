@@ -158,3 +158,37 @@ expression hist_Results =
 
 	annotation PBI_ResultType = Table
 
+expression api_Races =
+		let
+		    Source = Json.Document(
+		        Web.Contents(
+		            BaseUrl,
+		            [
+		                RelativePath = Number.ToText(CurrentSeason) & "/races/",
+		                Query = [limit = "100"]
+		            ]
+		        )
+		    ),
+		    Races = Source[MRData][RaceTable][Races],
+		    ToTable = Table.FromList(Races, Splitter.SplitByNothing(), {"Race"}),
+		    ExpRace = Table.ExpandRecordColumn(ToTable, "Race",
+		        {"season", "round", "raceName", "date", "time", "Circuit"}),
+		    ExpCircuit = Table.ExpandRecordColumn(ExpRace, "Circuit",
+		        {"circuitId", "circuitName", "Location"}),
+		    ExpLoc = Table.ExpandRecordColumn(ExpCircuit, "Location",
+		        {"locality", "country", "lat", "long"}),
+		    Typed = Table.TransformColumnTypes(ExpLoc, {
+		        {"season", Int64.Type}, {"round", Int64.Type},
+		        {"date", type date}, {"lat", type number}, {"long", type number}
+		    }, "en-US"),
+		    AddRaceKey = Table.AddColumn(Typed, "RaceKey",
+		        each [season] * 100 + [round], Int64.Type)
+		in
+		    AddRaceKey
+	lineageTag: 44da54c5-87cc-45db-82e9-1b33b1845671
+	queryGroup: Staging
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

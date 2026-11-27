@@ -3,44 +3,35 @@ table fact_Results
 
 	column RaceKey
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 3cd9565e-b453-4a79-a240-a335b7b43d23
-		summarizeBy: count
+		summarizeBy: none
 		sourceColumn: RaceKey
 
-		annotation SummarizationSetBy = Automatic
-
-	column season
-		dataType: int64
-		formatString: 0
-		lineageTag: 0bb95cd3-35b2-4eba-a274-f103507e5b8b
-		summarizeBy: sum
-		sourceColumn: season
-
-		annotation SummarizationSetBy = Automatic
-
-	column round
-		dataType: int64
-		formatString: 0
-		lineageTag: e46e7757-6fc9-456d-94ac-4eda12c61fdb
-		summarizeBy: none
-		sourceColumn: round
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
 	column driverId
 		dataType: string
+		isHidden
 		lineageTag: a080c499-fb6f-493d-b955-ee21cc5839c3
 		summarizeBy: none
 		sourceColumn: driverId
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
 	column constructorId
 		dataType: string
+		isHidden
 		lineageTag: dde58a7d-b435-4e51-846a-372d65424e93
 		summarizeBy: none
 		sourceColumn: constructorId
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -68,14 +59,6 @@ table fact_Results
 		lineageTag: ee93f54b-3ab9-49a7-86aa-8a46b62fabd7
 		summarizeBy: sum
 		sourceColumn: position
-
-		annotation SummarizationSetBy = Automatic
-
-	column positionText
-		dataType: string
-		lineageTag: ecc5fc65-c63c-42b5-b739-4b4107986a9a
-		summarizeBy: none
-		sourceColumn: positionText
 
 		annotation SummarizationSetBy = Automatic
 
@@ -107,27 +90,19 @@ table fact_Results
 
 		annotation SummarizationSetBy = Automatic
 
-	column status
+	column StatusText
 		dataType: string
-		lineageTag: 6dc99789-187c-4940-aaf6-287936bc2ee7
+		lineageTag: 7a946a9a-59cd-4d4e-b315-0916d95e2fe0
 		summarizeBy: none
-		sourceColumn: status
+		sourceColumn: StatusText
 
 		annotation SummarizationSetBy = Automatic
 
-	column detail
+	column StatusGroup
 		dataType: string
-		lineageTag: dedb2d93-032b-4bbf-899b-e0becb2ee228
+		lineageTag: d4b8dea2-978c-43dc-9187-8f6909136808
 		summarizeBy: none
-		sourceColumn: detail
-
-		annotation SummarizationSetBy = Automatic
-
-	column is_classified
-		dataType: string
-		lineageTag: a6ca7552-ed9b-49f2-9139-e0a08a59db74
-		summarizeBy: none
-		sourceColumn: is_classified
+		sourceColumn: StatusGroup
 
 		annotation SummarizationSetBy = Automatic
 
@@ -137,10 +112,16 @@ table fact_Results
 		source =
 				let
 				    Combined = Table.Combine({hist_Results, api_Results}),
-				    Keep = Table.SelectColumns(Combined,
-				        {"RaceKey", "season", "round", "driverId", "constructorId",
-				         "number", "grid", "position", "positionText", "points",
-				         "laps", "fastestLapRank", "status", "detail", "is_classified"})
+				    AddStatus = Table.AddColumn(Combined, "StatusText",
+				        each if [detail] <> null then [detail] else [status], type text),
+				    AddGroup = Table.AddColumn(AddStatus, "StatusGroup", each
+				        if [StatusText] = "Finished" then "Finished"
+				        else if [StatusText] = "Lapped"
+				             or ([StatusText] <> null and Text.StartsWith([StatusText], "+")) then "Lapped"
+				        else "DNF/Other", type text),
+				    Keep = Table.SelectColumns(AddGroup,
+				        {"RaceKey", "driverId", "constructorId", "number", "grid", "position",
+				         "points", "laps", "fastestLapRank", "StatusText", "StatusGroup"})
 				in
 				    Keep
 

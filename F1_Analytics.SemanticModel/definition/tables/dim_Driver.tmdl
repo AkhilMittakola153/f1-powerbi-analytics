@@ -1,0 +1,90 @@
+table dim_Driver
+	lineageTag: 9413117b-e268-4595-9728-4584bbba5270
+
+	column driverId
+		dataType: string
+		lineageTag: e6910707-dcb8-4cdd-8c5c-f73e7e596150
+		summarizeBy: none
+		sourceColumn: driverId
+
+		annotation SummarizationSetBy = Automatic
+
+	column code
+		dataType: string
+		lineageTag: 29aec5a1-cd37-465e-9da1-20211c893f1c
+		summarizeBy: none
+		sourceColumn: code
+
+		annotation SummarizationSetBy = Automatic
+
+	column givenName
+		dataType: string
+		lineageTag: fd8461ce-df98-4618-b9ec-4bb856ad3338
+		summarizeBy: none
+		sourceColumn: givenName
+
+		annotation SummarizationSetBy = Automatic
+
+	column familyName
+		dataType: string
+		lineageTag: d1e3139f-179e-4c73-8c38-4d4016af2de5
+		summarizeBy: none
+		sourceColumn: familyName
+
+		annotation SummarizationSetBy = Automatic
+
+	column nationality
+		dataType: string
+		lineageTag: 2e1d9677-8ad6-42dc-a685-160d8f327c19
+		summarizeBy: none
+		sourceColumn: nationality
+
+		annotation SummarizationSetBy = Automatic
+
+	column date_of_birth
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: d54d0cb7-1a71-435e-aed4-f52d9178bb6a
+		summarizeBy: none
+		sourceColumn: date_of_birth
+
+		variation Variation
+			isDefault
+			relationship: 2ec0ce2d-ec16-4e9c-8287-7d6f0a85c0a4
+			defaultHierarchy: LocalDateTable_42f82e2e-9f30-4c6b-8107-8c60734f8f75.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column DriverName
+		dataType: string
+		lineageTag: 5c518149-939b-4925-ad27-c8ee95ae67f8
+		summarizeBy: none
+		sourceColumn: DriverName
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_Driver = m
+		mode: import
+		queryGroup: Staging
+		source =
+				let
+				    Hist = Table.RenameColumns(
+				        Table.SelectColumns(HistCsv("formula_one_driver"),
+				            {"reference","abbreviation","forename","surname","nationality","date_of_birth"}),
+				        {{"reference","driverId"},{"abbreviation","code"},
+				         {"forename","givenName"},{"surname","familyName"}}),
+				    Api = Table.Distinct(Table.SelectColumns(api_Results,
+				            {"driverId","code","givenName","familyName","nationality"})),
+				    Unique = Table.Distinct(Table.Buffer(Table.Combine({Hist, Api})), {"driverId"}),
+				    Typed = Table.TransformColumnTypes(Unique, {{"date_of_birth", type date}}, "en-US"),
+				    AddName = Table.AddColumn(Typed, "DriverName",
+				            each [givenName] & " " & [familyName], type text)
+				in
+				    AddName
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

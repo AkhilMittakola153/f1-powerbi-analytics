@@ -1,0 +1,54 @@
+table dim_Constructor
+	lineageTag: 848bb95d-aece-4531-bd2b-28ed878f044d
+
+	column constructorId
+		dataType: string
+		lineageTag: 3103a5f7-8d9d-4e87-9234-4b98c2ab181c
+		summarizeBy: none
+		sourceColumn: constructorId
+
+		annotation SummarizationSetBy = Automatic
+
+	column constructorName
+		dataType: string
+		lineageTag: 5ed6a251-73ec-4208-a719-c973add1d5e9
+		summarizeBy: none
+		sourceColumn: constructorName
+
+		annotation SummarizationSetBy = Automatic
+
+	column nationality
+		dataType: string
+		lineageTag: 983b0bf7-ab9d-445e-9d62-e18b0026f9b7
+		summarizeBy: none
+		sourceColumn: nationality
+
+		annotation SummarizationSetBy = Automatic
+
+	column primary_color
+		dataType: string
+		lineageTag: 6b7f57e2-b9c9-4a74-92d1-5c27210b83b8
+		summarizeBy: none
+		sourceColumn: primary_color
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_Constructor = m
+		mode: import
+		queryGroup: Staging
+		source =
+				let
+				    Hist = Table.RenameColumns(
+				        Table.SelectColumns(HistCsv("formula_one_team"),
+				            {"reference","name","nationality","primary_color"}),
+				        {{"reference","constructorId"},{"name","constructorName"}}),
+				    Api = Table.Distinct(Table.SelectColumns(api_Results,
+				            {"constructorId","constructorName"})),
+				    Unique = Table.Distinct(Table.Buffer(Table.Combine({Hist, Api})), {"constructorId"})
+				in
+				    Unique
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

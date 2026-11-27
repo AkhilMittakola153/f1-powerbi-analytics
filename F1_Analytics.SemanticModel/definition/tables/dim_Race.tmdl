@@ -1,0 +1,162 @@
+table dim_Race
+	lineageTag: 93aabf7b-9065-4196-b6f5-8514a24b104e
+
+	column season
+		dataType: int64
+		formatString: 0
+		lineageTag: 7c58b855-263e-46a0-a8b1-e7b228cb55bc
+		summarizeBy: sum
+		sourceColumn: season
+
+		annotation SummarizationSetBy = Automatic
+
+	column round
+		dataType: int64
+		formatString: 0
+		lineageTag: ed40f5df-8225-45bb-be33-a5848c377ace
+		summarizeBy: sum
+		sourceColumn: round
+
+		annotation SummarizationSetBy = Automatic
+
+	column raceName
+		dataType: string
+		lineageTag: 727b83b0-668b-40b9-a8a5-4c80f95ef4ca
+		summarizeBy: none
+		sourceColumn: raceName
+
+		annotation SummarizationSetBy = Automatic
+
+	column date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 13d033a0-ce03-46b6-90e0-372e144a0856
+		summarizeBy: none
+		sourceColumn: date
+
+		variation Variation
+			isDefault
+			relationship: 28040305-d0fd-4e4d-b84d-1e49d70f0036
+			defaultHierarchy: LocalDateTable_111469c7-c4ae-40c5-a5a2-bead08e55d5a.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column circuitId
+		dataType: string
+		lineageTag: 05958c81-8280-4993-a120-86fddb69fe03
+		summarizeBy: none
+		sourceColumn: circuitId
+
+		annotation SummarizationSetBy = Automatic
+
+	column circuitName
+		dataType: string
+		lineageTag: 168ff66d-1d59-4ffe-a7e0-d45f5c70627c
+		summarizeBy: none
+		sourceColumn: circuitName
+
+		annotation SummarizationSetBy = Automatic
+
+	column locality
+		dataType: string
+		lineageTag: f7bbcd8c-9cc9-439b-add0-b49ad94328ea
+		summarizeBy: none
+		sourceColumn: locality
+
+		annotation SummarizationSetBy = Automatic
+
+	column country
+		dataType: string
+		lineageTag: 69658402-2383-45e0-8f97-8e4ca6a6a8a8
+		summarizeBy: none
+		sourceColumn: country
+
+		annotation SummarizationSetBy = Automatic
+
+	column lat
+		dataType: double
+		lineageTag: c48192ac-cfaa-4bb4-b151-8c5a4850397e
+		summarizeBy: sum
+		sourceColumn: lat
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column long
+		dataType: double
+		lineageTag: 86456e26-6186-4f03-8b5e-d845b4f9c1d4
+		summarizeBy: sum
+		sourceColumn: long
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column is_cancelled
+		dataType: string
+		lineageTag: 26fa8996-5cad-4694-92b7-7a605c26bcac
+		summarizeBy: none
+		sourceColumn: is_cancelled
+
+		annotation SummarizationSetBy = Automatic
+
+	column RaceKey
+		dataType: int64
+		formatString: 0
+		lineageTag: 9d962c04-186a-4125-8154-15ef809264f9
+		summarizeBy: none
+		sourceColumn: RaceKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column RaceLabel
+		dataType: string
+		lineageTag: 7a160205-de9b-458b-a467-5f1e439985e7
+		summarizeBy: none
+		sourceColumn: RaceLabel
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_Race = m
+		mode: import
+		queryGroup: Staging
+		source =
+				let
+				    Sea = Table.RenameColumns(
+				        Table.SelectColumns(HistCsv("formula_one_season"), {"id","year"}),
+				        {{"id","sea_id"}}),
+				    Cir = Table.RenameColumns(
+				        Table.SelectColumns(HistCsv("formula_one_circuit"),
+				            {"id","reference","name","locality","country","latitude","longitude"}),
+				        {{"id","cir_id"},{"reference","circuitId"},{"name","circuitName"},
+				         {"latitude","lat"},{"longitude","long"}}),
+				    Rnd = Table.SelectColumns(HistCsv("formula_one_round"),
+				            {"season_id","circuit_id","number","name","date","is_cancelled"}),
+				    J1 = Table.Join(Rnd, "season_id", Sea, "sea_id"),
+				    J2 = Table.Join(J1, "circuit_id", Cir, "cir_id"),
+				    Hist0 = Table.SelectRows(J2, each Number.From([year]) < CurrentSeason),
+				    Hist = Table.RenameColumns(
+				        Table.SelectColumns(Hist0, {"year","number","name","date","circuitId",
+				            "circuitName","locality","country","lat","long","is_cancelled"}),
+				        {{"year","season"},{"number","round"},{"name","raceName"}}),
+				    HistTyped = Table.TransformColumnTypes(Hist, {{"season", Int64.Type},
+				        {"round", Int64.Type}, {"date", type date},
+				        {"lat", type number}, {"long", type number}}, "en-US"),
+				    HistKey = Table.AddColumn(HistTyped, "RaceKey",
+				        each [season] * 100 + [round], Int64.Type),
+				    Api = Table.SelectColumns(api_Races, {"RaceKey","season","round","raceName",
+				        "date","circuitId","circuitName","locality","country","lat","long"}),
+				    Combined = Table.Combine({HistKey, Api}),
+				    AddLabel = Table.AddColumn(Combined, "RaceLabel",
+				        each Text.From([season]) & " R" & Text.PadStart(Text.From([round]), 2, "0")
+				             & " " & [raceName], type text)
+				in
+				    AddLabel
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

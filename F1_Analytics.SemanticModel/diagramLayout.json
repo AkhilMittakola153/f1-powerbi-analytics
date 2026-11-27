@@ -10,21 +10,8 @@
       "nodes": [
         {
           "location": {
-            "x": 0,
-            "y": 0
-          },
-          "nodeIndex": "api_Races",
-          "nodeLineageTag": "e1c38a32-71a2-4012-a951-aaf34fe16938",
-          "size": {
-            "height": 300,
-            "width": 234
-          },
-          "zIndex": 0
-        },
-        {
-          "location": {
-            "x": 284,
-            "y": 0
+            "x": 669.42104827188837,
+            "y": 440.26582955544382
           },
           "nodeIndex": "fact_Results",
           "nodeLineageTag": "69bdf3ad-9d0d-484b-b8a9-bc2bcaa5cac4",
@@ -33,10 +20,49 @@
             "width": 234
           },
           "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 0,
+            "y": 62
+          },
+          "nodeIndex": "dim_Constructor",
+          "nodeLineageTag": "848bb95d-aece-4531-bd2b-28ed878f044d",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 650.04567079675849,
+            "y": 0
+          },
+          "nodeIndex": "dim_Driver",
+          "nodeLineageTag": "9413117b-e268-4595-9728-4584bbba5270",
+          "size": {
+            "height": 248,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1268.9329558234112,
+            "y": 27.267439169670638
+          },
+          "nodeIndex": "dim_Race",
+          "nodeLineageTag": "93aabf7b-9065-4196-b6f5-8514a24b104e",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
         }
       ],
       "name": "All tables",
-      "zoomValue": 100,
+      "zoomValue": 48.648706804609205,
       "pinKeyFieldsToTop": false,
       "showExtraHeaderInfo": false,
       "hideKeyFieldsWhenCollapsed": false,
