@@ -19,7 +19,7 @@ annotation __PBI_TimeIntelligenceEnabled = 1
 
 annotation PBI_ProTooling = ["DevMode"]
 
-annotation PBI_QueryOrder = ["BaseUrl","CurrentSeason","api_Races","api_Results","HistoryUrl","HistCsv","hist_Results","fact_Results","dim_Driver","dim_Constructor","dim_Race"]
+annotation PBI_QueryOrder = ["BaseUrl","CurrentSeason","api_Races","api_Results","HistoryUrl","HistCsv","hist_Results","fact_Results","dim_Driver","dim_Constructor","dim_Race","_measures"]
 
 ref table fact_Results
 ref table dim_Driver
@@ -28,6 +28,7 @@ ref table LocalDateTable_42f82e2e-9f30-4c6b-8107-8c60734f8f75
 ref table dim_Constructor
 ref table dim_Race
 ref table LocalDateTable_111469c7-c4ae-40c5-a5a2-bead08e55d5a
+ref table _measures
 
 ref cultureInfo en-US
 

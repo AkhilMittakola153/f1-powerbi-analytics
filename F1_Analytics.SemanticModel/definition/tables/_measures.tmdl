@@ -1,0 +1,86 @@
+table _measures
+	lineageTag: 89cda754-ee4b-44b9-898c-13804231b087
+
+	measure Races = DISTINCTCOUNT ( fact_Results[RaceKey] )
+		formatString: 0
+		lineageTag: d43fcb4e-f6b9-4221-a8df-4766f7f132e8
+
+	measure Entries = COUNTROWS ( fact_Results )
+		formatString: 0
+		lineageTag: a87d5571-8717-46c0-b7ff-241b312870e8
+
+	measure Points = SUM ( fact_Results[points] )
+		formatString: 0
+		lineageTag: f2f8be14-d962-4f76-8f13-7e6880028ac3
+
+	measure Wins = CALCULATE ( [Entries], fact_Results[position] = 1 )
+		formatString: 0
+		lineageTag: d807d5b6-6dd5-46fd-8de9-ad36dd6c109a
+
+	measure Podiums = CALCULATE ( [Entries], fact_Results[position] <= 3 )
+		formatString: 0
+		lineageTag: faa9dbe6-3e03-474d-af0e-07409b49bd67
+
+	measure 'Front Row Starts' = CALCULATE ( [Entries], fact_Results[grid] IN { 1, 2 } )
+		formatString: 0
+		lineageTag: 7df65f62-7d14-4a3b-abae-5b810b591cd5
+
+	measure DNFs = CALCULATE ( [Entries], fact_Results[StatusGroup] = "DNF/Other" )
+		formatString: 0
+		lineageTag: 3960e8fa-13ca-4ff8-9ee3-d7ece9c45d67
+
+	measure 'DNF %' = DIVIDE ( [DNFs], [Entries] )
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 984e9b62-0db3-4ce1-8919-d5ae29928a9c
+
+	measure 'Win %' = DIVIDE ( [Wins], [Entries] )
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: f0cab9df-8dae-4613-bbbc-313f08943dbe
+
+	measure 'Avg Finish' =
+			
+			CALCULATE (
+			    AVERAGE ( fact_Results[position] ),
+			    fact_Results[StatusGroup] <> "DNF/Other"
+			)
+		formatString: 0.0
+		lineageTag: d551c21c-ccd6-497b-bc61-cb54d7fa0c88
+
+	measure 'Positions Gained' =
+			
+			SUMX (
+			    FILTER (
+			        fact_Results,
+			        fact_Results[grid] > 0
+			            && fact_Results[StatusGroup] <> "DNF/Other"
+			    ),
+			    fact_Results[grid] - fact_Results[position]
+			)
+		formatString: 0
+		lineageTag: 147257ee-adb2-430e-b61e-61b1a92defe7
+
+	measure 'Cumulative Points' =
+			
+			VAR CurRound = MAX ( dim_Race[round] )
+			RETURN
+			    CALCULATE (
+			        [Points],
+			        FILTER ( ALL ( dim_Race[round] ), dim_Race[round] <= CurRound )
+			    )
+		formatString: 0
+		lineageTag: d49b1ed9-a3b1-426a-bf2b-c037a7ed7a76
+
+	partition _measures = m
+		mode: import
+		source =
+				let
+				    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Column1 = _t]),
+				    #"Changed Type" = Table.TransformColumnTypes(Source,{{"Column1", type text}}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Column1"})
+				in
+				    #"Removed Columns"
+
+	changedProperty = Name
+
+	annotation PBI_ResultType = Table
+
