@@ -1,0 +1,82 @@
+table fact_Sprints
+	lineageTag: 77d9af5f-5c69-4d10-b086-74eb01f671b4
+
+	column RaceKey
+		dataType: int64
+		formatString: 0
+		lineageTag: da85c08f-c0e6-471a-b457-ee05e5a3937d
+		summarizeBy: none
+		sourceColumn: RaceKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column driverId
+		dataType: string
+		lineageTag: ea18e8c6-9395-4c41-9832-6dd592c87c76
+		summarizeBy: none
+		sourceColumn: driverId
+
+		annotation SummarizationSetBy = Automatic
+
+	column constructorId
+		dataType: string
+		lineageTag: 8ba91a02-0bdd-454d-b906-641e6f64a3b0
+		summarizeBy: none
+		sourceColumn: constructorId
+
+		annotation SummarizationSetBy = Automatic
+
+	column grid
+		dataType: int64
+		formatString: 0
+		lineageTag: 2a77a480-8c94-4aea-829c-8f637d429630
+		summarizeBy: sum
+		sourceColumn: grid
+
+		annotation SummarizationSetBy = Automatic
+
+	column position
+		dataType: int64
+		formatString: 0
+		lineageTag: 03c5332e-9a6c-4268-9339-ab91ec05765d
+		summarizeBy: sum
+		sourceColumn: position
+
+		annotation SummarizationSetBy = Automatic
+
+	column points
+		dataType: double
+		lineageTag: c779c3e6-b659-4b69-92f0-f479ca149d30
+		summarizeBy: sum
+		sourceColumn: points
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column StatusText
+		dataType: string
+		lineageTag: 34c50413-6997-4b6c-98fa-866fbf2f0be0
+		summarizeBy: none
+		sourceColumn: StatusText
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_Sprints = m
+		mode: import
+		queryGroup: Staging
+		source =
+				let
+				    Combined = Table.Combine({hist_Sprints, api_Sprints}),
+				    AddStatus = Table.AddColumn(Combined, "StatusText",
+				        each if [detail] <> null then [detail] else [status], type text),
+				    Keep = Table.SelectColumns(AddStatus,
+				        {"RaceKey", "driverId", "constructorId", "grid", "position",
+				         "points", "StatusText"})
+				in
+				    Keep
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

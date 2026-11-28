@@ -192,3 +192,121 @@ expression api_Races =
 
 	annotation PBI_ResultType = Table
 
+expression hist_Sprints =
+		let
+		    E   = Table.SelectColumns(HistCsv("formula_one_sessionentry"),
+		            {"session_id","round_entry_id","position","grid","points",
+		             "laps_completed","status","detail","fastest_lap_rank","is_classified"}),
+		    Ses = Table.RenameColumns(
+		            Table.SelectRows(
+		                Table.SelectColumns(HistCsv("formula_one_session"), {"id","round_id","type"}),
+		                each [type] = "SR"),
+		            {{"id","ses_id"}}),
+		    Rnd = Table.RenameColumns(
+		            Table.SelectColumns(HistCsv("formula_one_round"),
+		                {"id","season_id","number","name","date","circuit_id"}),
+		            {{"id","rnd_id"},{"number","round"},{"name","raceName"}}),
+		    Sea = Table.RenameColumns(
+		            Table.SelectColumns(HistCsv("formula_one_season"), {"id","year"}),
+		            {{"id","sea_id"}}),
+		    RE  = Table.RenameColumns(
+		            Table.SelectColumns(HistCsv("formula_one_roundentry"),
+		                {"id","team_driver_id","car_number"}),
+		            {{"id","re_id"}}),
+		    TD  = Table.RenameColumns(
+		            Table.SelectColumns(HistCsv("formula_one_teamdriver"),
+		                {"id","driver_id","team_id"}),
+		            {{"id","td_id"}}),
+		    Drv = Table.RenameColumns(
+		            Table.SelectColumns(HistCsv("formula_one_driver"),
+		                {"id","reference","abbreviation","forename","surname","nationality"}),
+		            {{"id","drv_id"},{"reference","driverId"},{"abbreviation","code"},
+		             {"forename","givenName"},{"surname","familyName"}}),
+		    Tm  = Table.RenameColumns(
+		            Table.SelectColumns(HistCsv("formula_one_team"), {"id","reference","name"}),
+		            {{"id","tm_id"},{"reference","constructorId"},{"name","constructorName"}}),
+		
+		    J1 = Table.Join(E,  "session_id", Ses, "ses_id"),
+		    J2 = Table.Join(J1, "round_id",   Rnd, "rnd_id"),
+		    J3 = Table.Join(J2, "season_id",  Sea, "sea_id"),
+		    Hist = Table.SelectRows(J3, each Number.From([year]) < CurrentSeason),
+		    J4 = Table.Join(Hist, "round_entry_id", RE, "re_id"),
+		    J5 = Table.Join(J4, "team_driver_id",   TD, "td_id"),
+		    J6 = Table.Join(J5, "driver_id",        Drv, "drv_id"),
+		    J7 = Table.Join(J6, "team_id",          Tm, "tm_id"),
+		
+		    Renamed = Table.RenameColumns(J7, {{"year","season"},{"car_number","number"},
+		                {"laps_completed","laps"},{"fastest_lap_rank","fastestLapRank"}}),
+		    Typed = Table.TransformColumnTypes(Renamed, {
+		                {"season", Int64.Type}, {"round", Int64.Type}, {"number", Int64.Type},
+		                {"position", Int64.Type}, {"points", type number}, {"grid", Int64.Type},
+		                {"laps", Int64.Type}, {"fastestLapRank", Int64.Type}}, "en-US"),
+		    AddRaceKey = Table.AddColumn(Typed, "RaceKey",
+		                each [season] * 100 + [round], Int64.Type),
+		    Final = Table.SelectColumns(AddRaceKey,
+		                {"season","round","RaceKey","number","position","points","grid","laps",
+		                 "status","detail","is_classified","driverId","code","givenName",
+		                 "familyName","nationality","constructorId","constructorName","fastestLapRank"})
+		in
+		    Final
+	lineageTag: b20bb01c-3e9e-43d3-81de-64d03bd0b6fe
+	queryGroup: Staging
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
+expression api_Sprints =
+		let
+		    PageSize = 100,
+		    GetPage = (offset as number) =>
+		        Json.Document(
+		            Web.Contents(
+		                BaseUrl,
+		                [
+		                    RelativePath = Number.ToText(CurrentSeason) & "/sprint/",
+		                    Query = [
+		                        limit  = Number.ToText(PageSize),
+		                        offset = Number.ToText(offset)
+		                    ]
+		                ]
+		            )
+		        )[MRData],
+		    First   = GetPage(0),
+		    Total   = Number.From(First[total]),
+		    Offsets = List.Numbers(0, Number.RoundUp(Total / PageSize), PageSize),
+		    Pages   = List.Transform(Offsets, each if _ = 0 then First else GetPage(_)),
+		    Races   = List.Combine(List.Transform(Pages, each [RaceTable][Races])),
+		    ToTable = Table.FromList(Races, Splitter.SplitByNothing(), {"Race"}),
+		    ExpRace = Table.ExpandRecordColumn(ToTable, "Race",
+		        {"season", "round", "SprintResults"}),
+		    ExpList = Table.ExpandListColumn(ExpRace, "SprintResults"),
+		    ExpRes  = Table.ExpandRecordColumn(ExpList, "SprintResults",
+		        {"number", "position", "positionText", "points", "grid", "laps",
+		         "status", "Driver", "Constructor", "Time", "FastestLap"}),
+		    ExpDrv  = Table.ExpandRecordColumn(ExpRes, "Driver",
+		        {"driverId", "code", "givenName", "familyName", "nationality"}),
+		    ExpCon  = Table.ExpandRecordColumn(ExpDrv, "Constructor",
+		        {"constructorId", "name"}, {"constructorId", "constructorName"}),
+		    ExpTime = Table.ExpandRecordColumn(ExpCon, "Time",
+		        {"millis"}, {"raceMillis"}),
+		    ExpFL   = Table.ExpandRecordColumn(ExpTime, "FastestLap",
+		        {"rank"}, {"fastestLapRank"}),
+		    Typed = Table.TransformColumnTypes(ExpFL, {
+		        {"season", Int64.Type}, {"round", Int64.Type},
+		        {"number", Int64.Type}, {"position", Int64.Type},
+		        {"points", type number}, {"grid", Int64.Type},
+		        {"laps", Int64.Type}, {"raceMillis", Int64.Type},
+		        {"fastestLapRank", Int64.Type}
+		    }, "en-US"),
+		    AddRaceKey = Table.AddColumn(Typed, "RaceKey",
+		        each [season] * 100 + [round], Int64.Type)
+		in
+		    AddRaceKey
+	lineageTag: 40fc4cd5-4e8f-4009-b3be-49c68d0af08d
+	queryGroup: Staging
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

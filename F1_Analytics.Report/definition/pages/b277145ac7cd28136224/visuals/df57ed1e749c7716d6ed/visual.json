@@ -37,11 +37,11 @@
                       "Entity": "_measures"
                     }
                   },
-                  "Property": "Points"
+                  "Property": "Total Points"
                 }
               },
-              "queryRef": "_measures.Points",
-              "nativeQueryRef": "Points"
+              "queryRef": "_measures.Total Points",
+              "nativeQueryRef": "Total Points"
             },
             {
               "field": {
@@ -98,7 +98,7 @@
                     "Entity": "_measures"
                   }
                 },
-                "Property": "Points"
+                "Property": "Total Points"
               }
             },
             "direction": "Descending"

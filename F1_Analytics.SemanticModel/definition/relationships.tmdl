@@ -20,3 +20,15 @@ relationship AutoDetected_e6c4f909-431c-4ff1-8a25-11580ef5e0a6
 	fromColumn: fact_Results.constructorId
 	toColumn: dim_Constructor.constructorId
 
+relationship AutoDetected_321b49ce-0fcd-4553-aa7c-85a1d415a929
+	fromColumn: fact_Sprints.RaceKey
+	toColumn: dim_Race.RaceKey
+
+relationship AutoDetected_38b7ebfe-5a52-4a90-bad6-d51620030140
+	fromColumn: fact_Sprints.driverId
+	toColumn: dim_Driver.driverId
+
+relationship AutoDetected_92eca510-1b2a-48aa-bdd6-fceb81318445
+	fromColumn: fact_Sprints.constructorId
+	toColumn: dim_Constructor.constructorId
+

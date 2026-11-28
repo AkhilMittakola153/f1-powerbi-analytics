@@ -70,6 +70,15 @@ table _measures
 		formatString: 0
 		lineageTag: d49b1ed9-a3b1-426a-bf2b-c037a7ed7a76
 
+	measure 'Sprint Points' = SUM ( fact_Sprints[points] )
+		lineageTag: bbd40ec8-e969-4e28-98d5-cc629329673f
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Points' = [Points] + [Sprint Points]
+		formatString: 0.0
+		lineageTag: 23df35f7-6db7-489f-8a72-8c938a36814d
+
 	partition _measures = m
 		mode: import
 		source =
